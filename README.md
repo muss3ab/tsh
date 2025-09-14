@@ -169,6 +169,15 @@ UPDATE users SET role = 'admin' WHERE email = 'admin@example.com';
 
 Admin users can access `/admin/products` and `/admin/categories` routes.
 
+## Example Users
+
+You can use the following example users for testing:
+
+| Email             | Password | Role  |
+| ----------------- | -------- | ----- |
+| admin@example.com | password | admin |
+| user@example.com  | password | user  |
+
 ## Development
 
 ### Running Tests
