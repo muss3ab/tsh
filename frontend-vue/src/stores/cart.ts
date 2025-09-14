@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
+import { cartAPI } from '../services/api'
 
 interface CartItem {
   id: number
@@ -32,15 +33,8 @@ export const useCartStore = defineStore('cart', () => {
   async function fetchCart() {
     loading.value = true
     try {
-      const response = await fetch('/api/cart', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Accept': 'application/json',
-        },
-      })
-      if (response.ok) {
-        cart.value = await response.json()
-      }
+      const response = await cartAPI.getCart()
+      cart.value = response.data
     } catch (error) {
       console.error('Failed to fetch cart:', error)
     } finally {
@@ -50,18 +44,8 @@ export const useCartStore = defineStore('cart', () => {
 
   async function addToCart(productId: number, quantity: number = 1) {
     try {
-      const response = await fetch('/api/cart', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({ product_id: productId, quantity }),
-      })
-      if (response.ok) {
-        cart.value = await response.json()
-      }
+      const response = await cartAPI.addItem({ product_id: productId, quantity })
+      cart.value = response.data
     } catch (error) {
       console.error('Failed to add to cart:', error)
     }
@@ -69,18 +53,8 @@ export const useCartStore = defineStore('cart', () => {
 
   async function updateCartItem(itemId: number, quantity: number) {
     try {
-      const response = await fetch(`/api/cart/${itemId}`, {
-        method: 'PATCH',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({ quantity }),
-      })
-      if (response.ok) {
-        cart.value = await response.json()
-      }
+      const response = await cartAPI.updateItem(itemId, quantity)
+      cart.value = response.data
     } catch (error) {
       console.error('Failed to update cart item:', error)
     }
@@ -88,16 +62,8 @@ export const useCartStore = defineStore('cart', () => {
 
   async function removeFromCart(itemId: number) {
     try {
-      const response = await fetch(`/api/cart/${itemId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Accept': 'application/json',
-        },
-      })
-      if (response.ok) {
-        cart.value = await response.json()
-      }
+      const response = await cartAPI.removeItem(itemId)
+      cart.value = response.data
     } catch (error) {
       console.error('Failed to remove from cart:', error)
     }

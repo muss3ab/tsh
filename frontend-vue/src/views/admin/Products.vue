@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useNotificationStore } from '../../stores/notification'
+import { productsAPI, categoriesAPI } from '../../services/api'
 
 interface Product {
   id: number
@@ -53,21 +54,8 @@ const resetForm = () => {
 const fetchProducts = async () => {
   loading.value = true
   try {
-    const response = await fetch('/api/admin/products', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Accept': 'application/json',
-      },
-    })
-    if (response.ok) {
-      const data = await response.json()
-      products.value = data.data
-    } else {
-      notificationStore.addNotification({
-        type: 'error',
-        message: 'Failed to fetch products',
-      })
-    }
+    const response = await productsAPI.getAll()
+    products.value = response.data.data
   } catch (error) {
     console.error('Failed to fetch products:', error)
     notificationStore.addNotification({
@@ -81,20 +69,8 @@ const fetchProducts = async () => {
 
 const fetchCategories = async () => {
   try {
-    const response = await fetch('/api/admin/categories', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Accept': 'application/json',
-      },
-    })
-    if (response.ok) {
-      categories.value = await response.json()
-    } else {
-      notificationStore.addNotification({
-        type: 'error',
-        message: 'Failed to fetch categories',
-      })
-    }
+    const response = await categoriesAPI.getAll()
+    categories.value = response.data
   } catch (error) {
     console.error('Failed to fetch categories:', error)
     notificationStore.addNotification({
@@ -106,34 +82,19 @@ const fetchCategories = async () => {
 
 const saveProduct = async () => {
   try {
-    const url = editingProduct.value
-      ? `/api/admin/products/${editingProduct.value.id}`
-      : '/api/admin/products'
-    const method = editingProduct.value ? 'PATCH' : 'POST'
-
-    const response = await fetch(url, {
-      method,
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(form.value),
-    })
-
-    if (response.ok) {
-      await fetchProducts()
-      resetForm()
-      notificationStore.addNotification({
-        type: 'success',
-        message: `Product ${editingProduct.value ? 'updated' : 'created'} successfully`,
-      })
+    let response
+    if (editingProduct.value) {
+      response = await productsAPI.update(editingProduct.value.id, form.value)
     } else {
-      notificationStore.addNotification({
-        type: 'error',
-        message: `Failed to ${editingProduct.value ? 'update' : 'create'} product`,
-      })
+      response = await productsAPI.create(form.value)
     }
+
+    await fetchProducts()
+    resetForm()
+    notificationStore.addNotification({
+      type: 'success',
+      message: `Product ${editingProduct.value ? 'updated' : 'created'} successfully`,
+    })
   } catch (error) {
     console.error('Failed to save product:', error)
     notificationStore.addNotification({
@@ -160,26 +121,12 @@ const deleteProduct = async (productId: number) => {
   if (!confirm('Are you sure you want to delete this product?')) return
 
   try {
-    const response = await fetch(`/api/admin/products/${productId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Accept': 'application/json',
-      },
+    await productsAPI.delete(productId)
+    await fetchProducts()
+    notificationStore.addNotification({
+      type: 'success',
+      message: 'Product deleted successfully',
     })
-
-    if (response.ok) {
-      await fetchProducts()
-      notificationStore.addNotification({
-        type: 'success',
-        message: 'Product deleted successfully',
-      })
-    } else {
-      notificationStore.addNotification({
-        type: 'error',
-        message: 'Failed to delete product',
-      })
-    }
   } catch (error) {
     console.error('Failed to delete product:', error)
     notificationStore.addNotification({

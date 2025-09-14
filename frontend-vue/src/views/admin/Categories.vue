@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useNotificationStore } from '../../stores/notification'
+import { categoriesAPI } from '../../services/api'
 
 interface Category {
   id: number
@@ -40,21 +41,8 @@ const resetForm = () => {
 const fetchCategories = async () => {
   loading.value = true
   try {
-    const response = await fetch('/api/admin/categories', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Accept': 'application/json',
-      },
-    })
-    if (response.ok) {
-      const data = await response.json()
-      categories.value = data.data || data
-    } else {
-      notificationStore.addNotification({
-        type: 'error',
-        message: 'Failed to fetch categories',
-      })
-    }
+    const response = await categoriesAPI.getAll()
+    categories.value = response.data.data || response.data
   } catch (error) {
     console.error('Failed to fetch categories:', error)
     notificationStore.addNotification({
@@ -83,37 +71,23 @@ const updateSlug = () => {
 
 const saveCategory = async () => {
   try {
-    const url = editingCategory.value
-      ? `/api/admin/categories/${editingCategory.value.id}`
-      : '/api/admin/categories'
-    const method = editingCategory.value ? 'PATCH' : 'POST'
-
-    const response = await fetch(url, {
-      method,
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify({
-        ...form.value,
-        parent_id: form.value.parent_id || null,
-      }),
-    })
-
-    if (response.ok) {
-      await fetchCategories()
-      resetForm()
-      notificationStore.addNotification({
-        type: 'success',
-        message: `Category ${editingCategory.value ? 'updated' : 'created'} successfully`,
-      })
-    } else {
-      notificationStore.addNotification({
-        type: 'error',
-        message: `Failed to ${editingCategory.value ? 'update' : 'create'} category`,
-      })
+    const categoryData = {
+      ...form.value,
+      parent_id: form.value.parent_id || null,
     }
+
+    if (editingCategory.value) {
+      await categoriesAPI.update(editingCategory.value.id, categoryData)
+    } else {
+      await categoriesAPI.create(categoryData)
+    }
+
+    await fetchCategories()
+    resetForm()
+    notificationStore.addNotification({
+      type: 'success',
+      message: `Category ${editingCategory.value ? 'updated' : 'created'} successfully`,
+    })
   } catch (error) {
     console.error('Failed to save category:', error)
     notificationStore.addNotification({
@@ -137,26 +111,12 @@ const deleteCategory = async (categoryId: number) => {
   if (!confirm('Are you sure you want to delete this category? This may affect products.')) return
 
   try {
-    const response = await fetch(`/api/admin/categories/${categoryId}`, {
-      method: 'DELETE',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Accept': 'application/json',
-      },
+    await categoriesAPI.delete(categoryId)
+    await fetchCategories()
+    notificationStore.addNotification({
+      type: 'success',
+      message: 'Category deleted successfully',
     })
-
-    if (response.ok) {
-      await fetchCategories()
-      notificationStore.addNotification({
-        type: 'success',
-        message: 'Category deleted successfully',
-      })
-    } else {
-      notificationStore.addNotification({
-        type: 'error',
-        message: 'Failed to delete category',
-      })
-    }
   } catch (error) {
     console.error('Failed to delete category:', error)
     notificationStore.addNotification({

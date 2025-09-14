@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
 import { useCartStore } from '../stores/cart'
 import { useWishlistStore } from '../stores/wishlist'
+import { authAPI } from '../services/api'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -22,28 +23,15 @@ const login = async () => {
   error.value = ''
 
   try {
-    const response = await fetch('/api/login', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(form.value),
-    })
+    const response = await authAPI.login(form.value)
 
-    const data = await response.json()
-
-    if (response.ok) {
-      authStore.setToken(data.token)
-      authStore.setUser(data.user)
-      await cartStore.fetchCart()
-      await wishlistStore.fetchWishlist()
-      router.push('/products')
-    } else {
-      error.value = data.message || 'Login failed'
-    }
-  } catch (err) {
-    error.value = 'An error occurred. Please try again.'
+    authStore.setToken(response.data.token)
+    authStore.setUser(response.data.user)
+    await cartStore.fetchCart()
+    await wishlistStore.fetchWishlist()
+    router.push('/products')
+  } catch (err: any) {
+    error.value = err.response?.data?.message || 'Login failed'
   } finally {
     loading.value = false
   }

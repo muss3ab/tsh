@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
+import { ordersAPI } from '../services/api'
 
 interface Order {
   id: number
@@ -29,16 +30,8 @@ const loading = ref(false)
 const fetchOrders = async () => {
   loading.value = true
   try {
-    const response = await fetch('/api/orders', {
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Accept': 'application/json',
-      },
-    })
-    if (response.ok) {
-      const data = await response.json()
-      orders.value = data.data
-    }
+    const response = await ordersAPI.getOrders()
+    orders.value = response.data.data
   } catch (error) {
     console.error('Failed to fetch orders:', error)
   } finally {

@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCartStore } from '../stores/cart'
+import { ordersAPI } from '../services/api'
 
 const router = useRouter()
 const cartStore = useCartStore()
@@ -18,27 +19,13 @@ const checkout = async () => {
   error.value = ''
 
   try {
-    const response = await fetch('/api/checkout', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${localStorage.getItem('token')}`,
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(form.value),
-    })
+    const response = await ordersAPI.createOrder(form.value)
 
-    const data = await response.json()
-
-    if (response.ok) {
-      // Clear cart and redirect to orders
-      await cartStore.fetchCart()
-      router.push('/orders')
-    } else {
-      error.value = data.message || 'Checkout failed'
-    }
-  } catch (err) {
-    error.value = 'An error occurred. Please try again.'
+    // Clear cart and redirect to orders
+    await cartStore.fetchCart()
+    router.push('/orders')
+  } catch (err: any) {
+    error.value = err.response?.data?.message || 'An error occurred. Please try again.'
   } finally {
     loading.value = false
   }

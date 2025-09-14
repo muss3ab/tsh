@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { authAPI } from '../services/api'
 
 const router = useRouter()
 const authStore = useAuthStore()
@@ -20,26 +21,13 @@ const register = async () => {
   error.value = ''
 
   try {
-    const response = await fetch('/api/register', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'application/json',
-      },
-      body: JSON.stringify(form.value),
-    })
+    const response = await authAPI.register(form.value)
 
-    const data = await response.json()
-
-    if (response.ok) {
-      authStore.setToken(data.token)
-      authStore.setUser(data.user)
-      router.push('/products')
-    } else {
-      error.value = data.message || 'Registration failed'
-    }
-  } catch (err) {
-    error.value = 'An error occurred. Please try again.'
+    authStore.setToken(response.data.token)
+    authStore.setUser(response.data.user)
+    router.push('/products')
+  } catch (err: any) {
+    error.value = err.response?.data?.message || 'Registration failed'
   } finally {
     loading.value = false
   }

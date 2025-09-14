@@ -4,6 +4,7 @@ import { useRoute } from 'vue-router'
 import { useCartStore } from '../stores/cart'
 import { useWishlistStore } from '../stores/wishlist'
 import { useAuthStore } from '../stores/auth'
+import { productsAPI } from '../services/api'
 
 interface Product {
   id: number
@@ -31,10 +32,8 @@ const authStore = useAuthStore()
 const fetchProduct = async () => {
   loading.value = true
   try {
-    const response = await fetch(`/api/products/${route.params.id}`)
-    if (response.ok) {
-      product.value = await response.json()
-    }
+    const response = await productsAPI.getById(Number(route.params.id))
+    product.value = response.data
   } catch (error) {
     console.error('Failed to fetch product:', error)
   } finally {

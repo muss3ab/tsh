@@ -1,5 +1,6 @@
 import { ref } from 'vue'
 import { defineStore } from 'pinia'
+import { wishlistAPI } from '../services/api'
 
 interface Product {
   id: number
@@ -22,16 +23,8 @@ export const useWishlistStore = defineStore('wishlist', () => {
   async function fetchWishlist() {
     loading.value = true
     try {
-      const response = await fetch('/api/wishlist', {
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Accept': 'application/json',
-        },
-      })
-      if (response.ok) {
-        const data = await response.json()
-        wishlist.value = data.data || []
-      }
+      const response = await wishlistAPI.getWishlist()
+      wishlist.value = response.data.data || []
     } catch (error) {
       console.error('Failed to fetch wishlist:', error)
     } finally {
@@ -41,18 +34,8 @@ export const useWishlistStore = defineStore('wishlist', () => {
 
   async function addToWishlist(productId: number) {
     try {
-      const response = await fetch('/api/wishlist', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: JSON.stringify({ product_id: productId }),
-      })
-      if (response.ok) {
-        await fetchWishlist() // Refresh wishlist
-      }
+      await wishlistAPI.addItem(productId)
+      await fetchWishlist() // Refresh wishlist
     } catch (error) {
       console.error('Failed to add to wishlist:', error)
     }
@@ -60,16 +43,8 @@ export const useWishlistStore = defineStore('wishlist', () => {
 
   async function removeFromWishlist(productId: number) {
     try {
-      const response = await fetch(`/api/wishlist/${productId}`, {
-        method: 'DELETE',
-        headers: {
-          'Authorization': `Bearer ${localStorage.getItem('token')}`,
-          'Accept': 'application/json',
-        },
-      })
-      if (response.ok) {
-        wishlist.value = wishlist.value.filter(product => product.id !== productId)
-      }
+      await wishlistAPI.removeItem(productId)
+      wishlist.value = wishlist.value.filter(product => product.id !== productId)
     } catch (error) {
       console.error('Failed to remove from wishlist:', error)
     }

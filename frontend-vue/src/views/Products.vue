@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 import { useCartStore } from '../stores/cart'
 import { useWishlistStore } from '../stores/wishlist'
 import { useAuthStore } from '../stores/auth'
+import { productsAPI, categoriesAPI } from '../services/api'
 
 interface Product {
   id: number
@@ -41,17 +42,14 @@ const authStore = useAuthStore()
 const fetchProducts = async () => {
   loading.value = true
   try {
-    const params = new URLSearchParams()
-    if (selectedCategory.value) params.append('category_id', selectedCategory.value)
-    if (searchQuery.value) params.append('search', searchQuery.value)
-    if (minPrice.value) params.append('min_price', minPrice.value)
-    if (maxPrice.value) params.append('max_price', maxPrice.value)
+    const params: any = {}
+    if (selectedCategory.value) params.category = selectedCategory.value
+    if (searchQuery.value) params.search = searchQuery.value
+    if (minPrice.value) params.min_price = minPrice.value
+    if (maxPrice.value) params.max_price = maxPrice.value
 
-    const response = await fetch(`/api/products?${params}`)
-    if (response.ok) {
-      const data = await response.json()
-      products.value = data.data
-    }
+    const response = await productsAPI.getAll(params)
+    products.value = response.data.data
   } catch (error) {
     console.error('Failed to fetch products:', error)
   } finally {
@@ -61,10 +59,8 @@ const fetchProducts = async () => {
 
 const fetchCategories = async () => {
   try {
-    const response = await fetch('/api/categories')
-    if (response.ok) {
-      categories.value = await response.json()
-    }
+    const response = await categoriesAPI.getAll()
+    categories.value = response.data
   } catch (error) {
     console.error('Failed to fetch categories:', error)
   }

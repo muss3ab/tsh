@@ -1,5 +1,6 @@
 import { ref, computed } from 'vue'
 import { defineStore } from 'pinia'
+import { authAPI } from '../services/api'
 
 interface User {
   id: number
@@ -25,17 +26,31 @@ export const useAuthStore = defineStore('auth', () => {
     localStorage.setItem('token', newToken)
   }
 
-  function logout() {
-    user.value = null
-    token.value = null
-    localStorage.removeItem('token')
+  async function logout() {
+    try {
+      await authAPI.logout()
+    } catch (error) {
+      console.error('Logout error:', error)
+    } finally {
+      user.value = null
+      token.value = null
+      localStorage.removeItem('token')
+    }
   }
 
-  function initializeAuth() {
+  async function initializeAuth() {
     const storedToken = localStorage.getItem('token')
     if (storedToken) {
       token.value = storedToken
-      // TODO: Fetch user data from API
+      try {
+        const response = await authAPI.getUser()
+        user.value = response.data
+      } catch (error) {
+        // Token might be invalid, clear it
+        console.error('Failed to fetch user:', error)
+        token.value = null
+        localStorage.removeItem('token')
+      }
     }
   }
 
