@@ -65,12 +65,10 @@ export const productsAPI = {
 
   create: (product: FormData) =>
     api.post('/admin/products', product, {
-      headers: { 'Content-Type': 'multipart/form-data' }
     }),
 
   update: (id: number, product: FormData) =>
     api.patch(`/admin/products/${id}`, product, {
-      headers: { 'Content-Type': 'multipart/form-data' }
     }),
 
   delete: (id: number) =>

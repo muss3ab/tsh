@@ -70,7 +70,7 @@ const fetchProducts = async () => {
 const fetchCategories = async () => {
   try {
     const response = await categoriesAPI.getAll()
-    categories.value = response.data
+    categories.value = response.data.data
   } catch (error) {
     console.error('Failed to fetch categories:', error)
     notificationStore.addNotification({
@@ -146,10 +146,7 @@ onMounted(() => {
   <div>
     <div class="flex justify-between items-center mb-8">
       <h1 class="text-3xl font-bold text-gray-900">Manage Products</h1>
-      <button
-        @click="showForm = true"
-        class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-      >
+      <button @click="showForm = true" class="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700">
         Add Product
       </button>
     </div>
@@ -163,21 +160,12 @@ onMounted(() => {
       <form @submit.prevent="saveProduct" class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-          <input
-            v-model="form.name"
-            type="text"
-            required
-            class="w-full border border-gray-300 rounded-md px-3 py-2"
-          />
+          <input v-model="form.name" type="text" required class="w-full border border-gray-300 rounded-md px-3 py-2" />
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-          <select
-            v-model="form.category_id"
-            required
-            class="w-full border border-gray-300 rounded-md px-3 py-2"
-          >
+          <select v-model="form.category_id" required class="w-full border border-gray-300 rounded-md px-3 py-2">
             <option value="">Select Category</option>
             <option v-for="category in categories" :key="category.id" :value="category.id">
               {{ category.name }}
@@ -187,56 +175,32 @@ onMounted(() => {
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Price</label>
-          <input
-            v-model="form.price"
-            type="number"
-            step="0.01"
-            required
-            class="w-full border border-gray-300 rounded-md px-3 py-2"
-          />
+          <input v-model="form.price" type="number" step="0.01" required
+            class="w-full border border-gray-300 rounded-md px-3 py-2" />
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Inventory Count</label>
-          <input
-            v-model="form.inventory_count"
-            type="number"
-            required
-            class="w-full border border-gray-300 rounded-md px-3 py-2"
-          />
+          <input v-model="form.inventory_count" type="number" required
+            class="w-full border border-gray-300 rounded-md px-3 py-2" />
         </div>
 
         <div class="md:col-span-2">
           <label class="block text-sm font-medium text-gray-700 mb-1">Image URL</label>
-          <input
-            v-model="form.image_url"
-            type="url"
-            class="w-full border border-gray-300 rounded-md px-3 py-2"
-          />
+          <input v-model="form.image_url" type="url" class="w-full border border-gray-300 rounded-md px-3 py-2" />
         </div>
 
         <div class="md:col-span-2">
           <label class="block text-sm font-medium text-gray-700 mb-1">Description</label>
-          <textarea
-            v-model="form.description"
-            required
-            rows="3"
-            class="w-full border border-gray-300 rounded-md px-3 py-2"
-          ></textarea>
+          <textarea v-model="form.description" required rows="3"
+            class="w-full border border-gray-300 rounded-md px-3 py-2"></textarea>
         </div>
 
         <div class="md:col-span-2 flex space-x-4">
-          <button
-            type="submit"
-            class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700"
-          >
+          <button type="submit" class="bg-green-600 text-white px-4 py-2 rounded hover:bg-green-700">
             {{ editingProduct ? 'Update' : 'Create' }}
           </button>
-          <button
-            type="button"
-            @click="resetForm"
-            class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700"
-          >
+          <button type="button" @click="resetForm" class="bg-gray-600 text-white px-4 py-2 rounded hover:bg-gray-700">
             Cancel
           </button>
         </div>
@@ -270,12 +234,8 @@ onMounted(() => {
             <td class="px-6 py-4 whitespace-nowrap">
               <div class="flex items-center">
                 <div class="flex-shrink-0 h-10 w-10">
-                  <img
-                    v-if="product.image_url"
-                    :src="product.image_url"
-                    :alt="product.name"
-                    class="h-10 w-10 rounded-full object-cover"
-                  />
+                  <img v-if="product.image_url" :src="product.image_url" :alt="product.name"
+                    class="h-10 w-10 rounded-full object-cover" />
                   <div v-else class="h-10 w-10 rounded-full bg-gray-300"></div>
                 </div>
                 <div class="ml-4">
@@ -294,16 +254,10 @@ onMounted(() => {
               {{ product.inventory_count }}
             </td>
             <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-              <button
-                @click="editProduct(product)"
-                class="text-blue-600 hover:text-blue-900 mr-4"
-              >
+              <button @click="editProduct(product)" class="text-blue-600 hover:text-blue-900 mr-4">
                 Edit
               </button>
-              <button
-                @click="deleteProduct(product.id)"
-                class="text-red-600 hover:text-red-900"
-              >
+              <button @click="deleteProduct(product.id)" class="text-red-600 hover:text-red-900">
                 Delete
               </button>
             </td>

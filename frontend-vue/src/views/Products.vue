@@ -60,7 +60,7 @@ const fetchProducts = async () => {
 const fetchCategories = async () => {
   try {
     const response = await categoriesAPI.getAll()
-    categories.value = response.data
+    categories.value = response.data.data
   } catch (error) {
     console.error('Failed to fetch categories:', error)
   }
@@ -97,11 +97,8 @@ onMounted(() => {
       <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Category</label>
-          <select
-            v-model="selectedCategory"
-            @change="fetchProducts"
-            class="w-full border border-gray-300 rounded-md px-3 py-2"
-          >
+          <select v-model="selectedCategory" @change="fetchProducts"
+            class="w-full border border-gray-300 rounded-md px-3 py-2">
             <option value="">All Categories</option>
             <option v-for="category in categories" :key="category.id" :value="category.id">
               {{ category.name }}
@@ -111,35 +108,20 @@ onMounted(() => {
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Search</label>
-          <input
-            v-model="searchQuery"
-            @input="fetchProducts"
-            type="text"
-            placeholder="Search products..."
-            class="w-full border border-gray-300 rounded-md px-3 py-2"
-          />
+          <input v-model="searchQuery" @input="fetchProducts" type="text" placeholder="Search products..."
+            class="w-full border border-gray-300 rounded-md px-3 py-2" />
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Min Price</label>
-          <input
-            v-model="minPrice"
-            @input="fetchProducts"
-            type="number"
-            placeholder="0"
-            class="w-full border border-gray-300 rounded-md px-3 py-2"
-          />
+          <input v-model="minPrice" @input="fetchProducts" type="number" placeholder="0"
+            class="w-full border border-gray-300 rounded-md px-3 py-2" />
         </div>
 
         <div>
           <label class="block text-sm font-medium text-gray-700 mb-1">Max Price</label>
-          <input
-            v-model="maxPrice"
-            @input="fetchProducts"
-            type="number"
-            placeholder="1000"
-            class="w-full border border-gray-300 rounded-md px-3 py-2"
-          />
+          <input v-model="maxPrice" @input="fetchProducts" type="number" placeholder="1000"
+            class="w-full border border-gray-300 rounded-md px-3 py-2" />
         </div>
       </div>
     </div>
@@ -152,18 +134,10 @@ onMounted(() => {
     </div>
 
     <div v-else class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-      <div
-        v-for="product in products"
-        :key="product.id"
-        class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow"
-      >
+      <div v-for="product in products" :key="product.id"
+        class="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-lg transition-shadow">
         <div class="aspect-w-1 aspect-h-1 bg-gray-200">
-          <img
-            v-if="product.image_url"
-            :src="product.image_url"
-            :alt="product.name"
-            class="w-full h-48 object-cover"
-          />
+          <img v-if="product.image_url" :src="product.image_url" :alt="product.name" class="w-full h-48 object-cover" />
           <div v-else class="w-full h-48 bg-gray-300 flex items-center justify-center">
             <span class="text-gray-500">No Image</span>
           </div>
@@ -180,20 +154,14 @@ onMounted(() => {
           <p class="text-gray-800 font-bold mb-4">${{ product.price }}</p>
 
           <div class="flex space-x-2">
-            <button
-              @click="addToCart(product.id)"
-              :disabled="!authStore.isAuthenticated"
-              class="flex-1 bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400"
-            >
+            <button @click="addToCart(product.id)" :disabled="!authStore.isAuthenticated"
+              class="flex-1 bg-blue-600 text-white px-3 py-2 rounded hover:bg-blue-700 disabled:bg-gray-400">
               Add to Cart
             </button>
 
-            <button
-              v-if="authStore.isAuthenticated"
-              @click="addToWishlist(product.id)"
+            <button v-if="authStore.isAuthenticated" @click="addToWishlist(product.id)"
               class="p-2 text-gray-600 hover:text-red-600"
-              :class="{ 'text-red-600': wishlistStore.isInWishlist(product.id) }"
-            >
+              :class="{ 'text-red-600': wishlistStore.isInWishlist(product.id) }">
               ♥
             </button>
           </div>
